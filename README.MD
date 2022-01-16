@@ -11,6 +11,12 @@
 
 ## 물리적 다이어그램
 
+![physical-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/cola314/PortBinder/master/Diagrams/PhysicalDiagram.puml)
+
 ## 논리적 다이어그램
 
+![logical-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/cola314/PortBinder/master/Diagrams/LogicalDiagram.puml)
+
 ## 시퀀스 다이어그램
+
+![sequence-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/cola314/PortBinder/master/Diagrams/SequenceDiagram.puml)
