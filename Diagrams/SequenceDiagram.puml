@@ -1,0 +1,38 @@
+@startuml Sequence
+
+Actor "Client A" as Client
+participant "Port Binder Server" as Server
+participant "Port Binder Agent" as Agent
+participant "Local Server" as Local
+
+group Connect
+  Client -> Server: Connect
+  Server -> Server: Get Agent by port
+  Server -> Agent: Client A is connected
+  Agent -> Agent: Create socket\ncorresponding to Client A
+  Agent -> Local: Connect
+end
+
+group Send Request
+  Client -> Server: Request "hi local"
+  Server -> Agent: Client A requests "hi local"
+  Agent -> Agent: Get Socket\ncorresponding to Client A
+  Agent -> Local: Request "hi local"
+end
+
+group Response
+  Local -> Agent: Response "hi client"
+  Agent -> Agent: Get Client information\nby Socket
+  Agent -> Server: Response "hi client" to Client A
+  Server -> Server: Get Client socket
+  Server -> Client: Response "hi client"
+end
+
+group Disconnect
+  Client -> Server: Disconnect
+  Server -> Agent: Client A is disconnected
+  Agent -> Agent: Get Socket\ncorresponding to Client A
+  Agent -> Local: Disconnect
+end
+
+@enduml

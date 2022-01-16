@@ -1,0 +1,18 @@
+@startuml PhysicalDiagram
+
+() Client
+
+package "External Network" {
+  [Port Binder Server] AS Server
+  Client -> Server
+}
+
+package "Local Network" {
+  [Port Binder Agent] AS Agent
+  [Local Server] AS Local
+  
+  Server <- Agent
+  Agent -> Local
+}
+
+@enduml

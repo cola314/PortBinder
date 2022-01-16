@@ -1,0 +1,10 @@
+@startuml LogicalDiagram
+
+() Client
+
+package "Local Network" {
+  [Local Server] AS Local
+  Client => Local
+}
+
+@enduml
