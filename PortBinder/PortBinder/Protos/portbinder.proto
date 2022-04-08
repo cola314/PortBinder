@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcProtocol";
+
+service PortBinder {
+  rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse);
+}
+
+message RegisterAgentRequest {
+	int32 port = 1;
+}
+
+message RegisterAgentResponse {
+	bool success = 1;
+}
