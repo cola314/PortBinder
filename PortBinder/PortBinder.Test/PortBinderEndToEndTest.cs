@@ -27,4 +27,22 @@ public class PortBinderEndToEndTest : IDisposable
 
         app.Close();
     }
+
+    [Fact]
+    public void ClientConnectedAndimmediatelyDisconnect()
+    {
+        server.Start(SERVER_PORT);
+
+        app.ConnectToServer(SERVER_ADDRESS);
+
+        app.RegisterPort(1234);
+        server.AgentPortRegisterd(1234);
+
+        server.NotifiesClientConnected();
+        app.ClientConnected();
+        server.NotifiesClientDisconnected();
+        app.ClientDisconnected();
+
+        app.Close();
+    }
 }

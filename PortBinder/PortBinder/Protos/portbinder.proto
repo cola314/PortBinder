@@ -4,12 +4,26 @@ option csharp_namespace = "GrpcProtocol";
 
 service PortBinder {
   rpc RegisterAgent (RegisterAgentRequest) returns (RegisterAgentResponse);
+  rpc StreamingClientEvent (stream ClientEvent) returns (stream ClientEvent);
 }
 
 message RegisterAgentRequest {
 	int32 port = 1;
+	string agent_id = 2;
 }
 
 message RegisterAgentResponse {
 	bool success = 1;
+}
+
+enum ClientEventType {
+	NONE = 0;
+	CLIENT_CONNECTED = 1;
+	CLIENT_DISCONNECTED = 2;
+}
+
+message ClientEvent {
+	ClientEventType event_type = 1;
+	string agent_id = 2;
+	string client_id = 3;
 }
