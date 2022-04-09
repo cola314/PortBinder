@@ -11,10 +11,36 @@ public class FakePortBinderServer : IDisposable
     {
         public int? Port { get; private set; }
 
+        private IServerStreamWriter<ClientEvent> _responseStream;
+        private ManualResetEvent manual = new ManualResetEvent(false);
+
         public override Task<RegisterAgentResponse> RegisterAgent(RegisterAgentRequest request, ServerCallContext context)
         {
             Port = request.Port;
             return Task.FromResult(new RegisterAgentResponse() { Success = true });
+        }
+
+        public override Task StreamingClientEvent(IAsyncStreamReader<ClientEvent> requestStream, IServerStreamWriter<ClientEvent> responseStream, ServerCallContext context)
+        {
+            _responseStream = responseStream;
+
+            return Task.Run(async () =>
+            {
+                await foreach(var message in requestStream.ReadAllAsync())
+                {
+
+                }
+            });
+        }
+
+        internal void NotifiesClientDisconnected()
+        {
+            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.ClientDisconnected }).Wait();
+        }
+
+        internal void NotifiesClientConnected()
+        {
+            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.ClientConnected }).Wait();
         }
     }
 
@@ -23,7 +49,7 @@ public class FakePortBinderServer : IDisposable
 
     public void Dispose()
     {
-        server.ShutdownAsync().Wait();
+        server.KillAsync().Wait();
     }
 
     public void Start(int port)
@@ -36,6 +62,16 @@ public class FakePortBinderServer : IDisposable
         server.Start();
 
         Console.WriteLine("Greeter server listening on port " + port);
+    }
+
+    public void NotifiesClientDisconnected()
+    {
+        portBinderService.NotifiesClientDisconnected();
+    }
+
+    public void NotifiesClientConnected()
+    {
+        portBinderService.NotifiesClientConnected();
     }
 
     public void AgentPortRegisterd(int port)
