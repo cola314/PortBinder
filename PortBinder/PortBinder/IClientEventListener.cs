@@ -2,7 +2,7 @@
 
 public interface IClientEventListener
 {
-    void ClientConnected();
-    void ClientDiconnected();
-    void ClientDataSend();
+    void ClientConnected(string clientId);
+    void ClientDiconnected(string clientId);
+    void ClientDataSend(string clientId, byte[] data);
 }

@@ -2,7 +2,7 @@
 
 public class TestTool
 {
-    public static async Task<bool> Polling(Func<bool> predicate, int millis = 1000)
+    public static async Task<bool> Polling(Func<bool> predicate, int millis = 10000)
     {
         var start = DateTime.Now;
         var timeout = TimeSpan.FromMilliseconds(millis);

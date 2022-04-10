@@ -7,9 +7,9 @@ public class AgentSocketManager
     private object _lock = new object();
     private Dictionary<string, Client> _clients = new();
     private readonly int LOCAL_SERVER_PORT;
-    private IAgentSocketEventListener _listener;
+    private IAgentSocketEventListener? _listener;
 
-    public AgentSocketManager(IAgentSocketEventListener listener, int localServerPort)
+    public AgentSocketManager(IAgentSocketEventListener? listener, int localServerPort)
     {
         this._listener = listener;
         this.LOCAL_SERVER_PORT = localServerPort;
@@ -26,15 +26,15 @@ public class AgentSocketManager
 
         client.Connected += (_, _) =>
         {
-            _listener.OnConnected(clientId);
+            _listener?.OnConnected(clientId);
         };
         client.Disconnected += (_, _) =>
         {
-            _listener.OnDisconnected(clientId);
+            _listener?.OnDisconnected(clientId);
         };
         client.DataReceived += (_, data) =>
         {
-            _listener.OnReceiveData(clientId, data);
+            _listener?.OnReceiveData(clientId, data);
         };
 
         client.Connect();

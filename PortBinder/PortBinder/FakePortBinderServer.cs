@@ -1,5 +1,7 @@
-﻿using Grpc.Core;
+﻿using Google.Protobuf;
+using Grpc.Core;
 using GrpcProtocol;
+using PortBinder.Utils;
 using System;
 using Xunit;
 
@@ -10,6 +12,7 @@ public class FakePortBinderServer : IDisposable
     private class PortBinderService : GrpcProtocol.PortBinder.PortBinderBase
     {
         public int? Port { get; private set; }
+        public byte[]? Data { get; private set; }
 
         private IServerStreamWriter<ClientEvent> _responseStream;
         private ManualResetEvent manual = new ManualResetEvent(false);
@@ -29,25 +32,46 @@ public class FakePortBinderServer : IDisposable
             {
                 await foreach(var message in requestStream.ReadAllAsync())
                 {
-
+                    switch (message.EventType)
+                    {
+                        case ClientEventType.DataTransfer:
+                            Data = message.Data.ToArray();
+                            break;
+                    }
                 }
             });
         }
 
-        internal void NotifiesClientDisconnected()
+        internal void NotifiesClientDisconnected(string clientId)
         {
-            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.ClientDisconnected }).Wait();
+            var command = new ClientEvent()
+            {
+                ClientId = clientId,
+                EventType = ClientEventType.ClientDisconnected,
+            };
+            _responseStream.WriteAsync(command).Wait();
         }
 
-        internal void NotifiesClientConnected()
+        internal void NotifiesClientConnected(string clientId)
         {
             manual.WaitOne();
-            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.ClientConnected }).Wait();
+            var command = new ClientEvent()
+            {
+                ClientId = clientId,
+                EventType = ClientEventType.ClientConnected,
+            };
+            _responseStream.WriteAsync(command).Wait();
         }
 
-        internal void NotifiesClientSendData()
+        internal void NotifiesClientSendData(string clientId, byte[] data)
         {
-            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.DataTransfer }).Wait();
+            var command = new ClientEvent()
+            {
+                ClientId = clientId,
+                EventType = ClientEventType.DataTransfer,
+                Data = ByteString.CopyFrom(data),
+            };
+            _responseStream.WriteAsync(command).Wait();
         }
     }
 
@@ -71,23 +95,28 @@ public class FakePortBinderServer : IDisposable
         Console.WriteLine("Greeter server listening on port " + port);
     }
 
-    public void NotifiesClientDisconnected()
+    public void NotifiesClientDisconnected(string clientId)
     {
-        portBinderService.NotifiesClientDisconnected();
+        portBinderService.NotifiesClientDisconnected(clientId);
     }
 
-    public void NotifiesClientConnected()
+    public void NotifiesClientConnected(string clientId)
     {
-        portBinderService.NotifiesClientConnected();
+        portBinderService.NotifiesClientConnected(clientId);
     }
 
-    public void NotifiesClientSendData()
+    public void NotifiesClientSendData(string clientId, byte[] data)
     {
-        portBinderService.NotifiesClientSendData();
+        portBinderService.NotifiesClientSendData(clientId, data);
     }
 
     public void AgentPortRegisterd(int port)
     {
         Assert.Equal(port, portBinderService.Port);
+    }
+
+    public void ReceiveData(byte[] bytes)
+    {
+        Assert.True(TestTool.Polling(() => portBinderService.Data?.SequenceEqual(bytes) ?? false).Result);
     }
 }
