@@ -1,6 +1,4 @@
-﻿using Grpc.Core;
-using GrpcProtocol;
-using PortBinder.Utils;
+﻿using PortBinder.Utils;
 using Xunit;
 
 namespace PortBinder;
@@ -41,10 +39,16 @@ public class Application
         Assert.True(TestTool.Polling(() => _clientEventListener.IsClientDisconnected).Result);
     }
 
+    public void ClientSendData()
+    {
+        Assert.True(TestTool.Polling(() => _clientEventListener.IsClientSendData).Result);
+    }
+
     private class ClientEventListener : IClientEventListener
     {
         public bool IsClientConnected { get; private set; }
         public bool IsClientDisconnected { get; private set; }
+        public bool IsClientSendData { get; private set; }
 
         public void ClientConnected()
         {
@@ -54,6 +58,11 @@ public class Application
         public void ClientDiconnected()
         {
             IsClientDisconnected = true;
+        }
+
+        public void ClientDataSend()
+        {
+            IsClientSendData = true;
         }
     }
 }

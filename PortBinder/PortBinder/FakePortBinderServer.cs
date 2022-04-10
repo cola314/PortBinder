@@ -12,6 +12,7 @@ public class FakePortBinderServer : IDisposable
         public int? Port { get; private set; }
 
         private IServerStreamWriter<ClientEvent> _responseStream;
+        private ManualResetEvent manual = new ManualResetEvent(false);
 
         public override Task<RegisterAgentResponse> RegisterAgent(RegisterAgentRequest request, ServerCallContext context)
         {
@@ -21,6 +22,7 @@ public class FakePortBinderServer : IDisposable
 
         public override Task StreamingClientEvent(IAsyncStreamReader<ClientEvent> requestStream, IServerStreamWriter<ClientEvent> responseStream, ServerCallContext context)
         {
+            manual.Set();
             _responseStream = responseStream;
 
             return Task.Run(async () =>
@@ -39,7 +41,13 @@ public class FakePortBinderServer : IDisposable
 
         internal void NotifiesClientConnected()
         {
+            manual.WaitOne();
             _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.ClientConnected }).Wait();
+        }
+
+        internal void NotifiesClientSendData()
+        {
+            _responseStream.WriteAsync(new ClientEvent() { EventType = ClientEventType.DataTransfer }).Wait();
         }
     }
 
@@ -71,6 +79,11 @@ public class FakePortBinderServer : IDisposable
     public void NotifiesClientConnected()
     {
         portBinderService.NotifiesClientConnected();
+    }
+
+    public void NotifiesClientSendData()
+    {
+        portBinderService.NotifiesClientSendData();
     }
 
     public void AgentPortRegisterd(int port)

@@ -10,31 +10,28 @@ public class PortBinderEndToEndTest : IDisposable
     FakePortBinderServer server = new();
     Application app = new();
 
+    public PortBinderEndToEndTest()
+    {
+        server.Start(SERVER_PORT);
+        app.ConnectToServer(SERVER_ADDRESS);
+    }
+
     public void Dispose()
     {
+        app.Close();
         server.Dispose();
     }
 
     [Fact]
     public void RegisterPortAndNoClientConnected()
     {
-        server.Start(SERVER_PORT);
-
-        app.ConnectToServer(SERVER_ADDRESS);
-
         app.RegisterPort(1234);
         server.AgentPortRegisterd(1234);
-
-        app.Close();
     }
 
     [Fact]
     public void ClientConnectedAndimmediatelyDisconnect()
     {
-        server.Start(SERVER_PORT);
-
-        app.ConnectToServer(SERVER_ADDRESS);
-
         app.RegisterPort(1234);
         server.AgentPortRegisterd(1234);
 
@@ -42,7 +39,21 @@ public class PortBinderEndToEndTest : IDisposable
         app.ClientConnected();
         server.NotifiesClientDisconnected();
         app.ClientDisconnected();
+    }
 
-        app.Close();
+    [Fact]
+    public void ClientConnectedAndDisconnectedAfterSendData()
+    {
+        app.RegisterPort(1234);
+        server.AgentPortRegisterd(1234);
+
+        server.NotifiesClientConnected();
+        app.ClientConnected();
+
+        server.NotifiesClientSendData();
+        app.ClientSendData();
+
+        server.NotifiesClientDisconnected();
+        app.ClientDisconnected();
     }
 }

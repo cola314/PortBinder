@@ -47,6 +47,9 @@ public class PortBinderServer
                     case ClientEventType.ClientDisconnected:
                         _listener.ClientDiconnected();
                         break;
+                    case ClientEventType.DataTransfer:
+                        _listener.ClientDataSend();
+                        break;
                 }
             }
         });

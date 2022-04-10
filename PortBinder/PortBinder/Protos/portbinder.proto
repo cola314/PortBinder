@@ -20,6 +20,7 @@ enum ClientEventType {
 	NONE = 0;
 	CLIENT_CONNECTED = 1;
 	CLIENT_DISCONNECTED = 2;
+	DATA_TRANSFER = 3;
 }
 
 message ClientEvent {
