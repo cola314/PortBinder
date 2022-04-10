@@ -5,8 +5,8 @@ namespace PortBinder.Test;
 
 public class PortBinderEndToEndTest : IDisposable
 {
-    const int SERVER_PORT = 34567;
-    readonly string SERVER_ADDRESS = $"localhost:{SERVER_PORT}";
+    readonly int SERVER_PORT = RandomPortGenerator.GetNextPort();
+    string SERVER_ADDRESS => $"localhost:{SERVER_PORT}";
     FakePortBinderServer server = new();
     Application app = new();
 

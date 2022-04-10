@@ -9,6 +9,8 @@ namespace PortBinder.Test.SpySocket;
 
 public class EchoServer
 {
+    private int ASSERT_TIMEOUT = 2000;
+    private ManualResetEvent manual = new ManualResetEvent(false);
     private CancellationTokenSource tokenSource = new CancellationTokenSource();
     private TcpListener listener;
 

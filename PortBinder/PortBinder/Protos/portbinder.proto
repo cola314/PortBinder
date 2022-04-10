@@ -27,4 +27,5 @@ message ClientEvent {
 	ClientEventType event_type = 1;
 	string agent_id = 2;
 	string client_id = 3;
+	bytes data = 4;
 }

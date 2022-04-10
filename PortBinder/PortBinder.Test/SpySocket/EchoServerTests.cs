@@ -8,7 +8,7 @@ namespace PortBinder.Test.SpySocket;
 public class EchoServerTests : IDisposable
 {
     private EchoServer server;
-    private int PORT = 1616;
+    private int PORT = RandomPortGenerator.GetNextPort();
 
     public EchoServerTests()
     {
