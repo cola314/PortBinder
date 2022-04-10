@@ -12,7 +12,6 @@ public class FakePortBinderServer : IDisposable
         public int? Port { get; private set; }
 
         private IServerStreamWriter<ClientEvent> _responseStream;
-        private ManualResetEvent manual = new ManualResetEvent(false);
 
         public override Task<RegisterAgentResponse> RegisterAgent(RegisterAgentRequest request, ServerCallContext context)
         {

@@ -1,80 +1,59 @@
 ﻿using Grpc.Core;
 using GrpcProtocol;
+using PortBinder.Utils;
 using Xunit;
-using static GrpcProtocol.PortBinder;
 
 namespace PortBinder;
 
 public class Application
 {
-    private Channel channel;
-    private PortBinderClient client;
-    private AsyncDuplexStreamingCall<ClientEvent, ClientEvent> _call;
-    private bool _clientConnected;
-    private bool _clientDisconnected;
+    private ClientEventListener _clientEventListener;
+    private PortBinderServer _server;
 
-    public void Run()
+    public Application()
     {
-
+        _clientEventListener = new ClientEventListener();
+        _server = new PortBinderServer(_clientEventListener);
     }
 
     public void ConnectToServer(string serverAddress)
     {
-        channel = new Channel(serverAddress, ChannelCredentials.Insecure);
-
-        client = new GrpcProtocol.PortBinder.PortBinderClient(channel);
+        _server.ConnectToServer(serverAddress);
     }
 
     public void Close()
     {
-        _call.RequestStream.CompleteAsync().Wait();
-        _call.Dispose();
-        channel.ShutdownAsync().Wait();
+        _server.Close();
     }
 
     public void RegisterPort(int port)
     {
-        var result = client.RegisterAgent(new RegisterAgentRequest() { Port = port });
-
-        _call = client.StreamingClientEvent();
-        var readTask = Task.Run(async () =>
-        {
-            await foreach (var response in _call.ResponseStream.ReadAllAsync())
-            {
-                switch (response.EventType)
-                {
-                    case ClientEventType.ClientConnected:
-                        _clientConnected = true;
-                        break;
-                    case ClientEventType.ClientDisconnected:
-                        _clientDisconnected = true;
-                        break;
-                }
-            }
-        });
-    }
-
-    private async Task<bool> Polling(Func<bool> predicate, int millis = 1000)
-    {
-        var start = DateTime.Now;
-        var timeout = TimeSpan.FromMilliseconds(millis);
-        while (DateTime.Now - start <= timeout)
-        {
-            if (predicate())
-                return true;
-
-            await Task.Delay(10);
-        }
-        return false;
+        _server.RegisterPort(port);
     }
 
     public void ClientConnected()
     {
-        Assert.True(Polling(() => _clientConnected).Result);
+        Assert.True(TestTool.Polling(() => _clientEventListener.IsClientConnected).Result);
     }
 
     public void ClientDisconnected()
     {
-        Assert.True(Polling(() => _clientDisconnected).Result);
+        Assert.True(TestTool.Polling(() => _clientEventListener.IsClientDisconnected).Result);
+    }
+
+    private class ClientEventListener : IClientEventListener
+    {
+        public bool IsClientConnected { get; private set; }
+        public bool IsClientDisconnected { get; private set; }
+
+        public void ClientConnected()
+        {
+            IsClientConnected = true;
+        }
+
+        public void ClientDiconnected()
+        {
+            IsClientDisconnected = true;
+        }
     }
 }
