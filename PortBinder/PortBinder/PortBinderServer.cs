@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+﻿using Google.Protobuf;
+using Grpc.Core;
 using GrpcProtocol;
 using static GrpcProtocol.PortBinder;
 
@@ -42,13 +43,27 @@ public class PortBinderServer
                 switch (response.EventType)
                 {
                     case ClientEventType.ClientConnected:
-                        _listener.ClientConnected();
+                        _listener.ClientConnected(response.ClientId);
                         break;
                     case ClientEventType.ClientDisconnected:
-                        _listener.ClientDiconnected();
+                        _listener.ClientDiconnected(response.ClientId);
+                        break;
+                    case ClientEventType.DataTransfer:
+                        _listener.ClientDataSend(response.ClientId, response.Data.ToArray());
                         break;
                 }
             }
         });
+    }
+
+    public Task SendDataAsync(string clientId, byte[] data)
+    {
+        var command = new ClientEvent()
+        {
+            ClientId = clientId,
+            EventType = ClientEventType.DataTransfer,
+            Data = ByteString.CopyFrom(data)
+        };
+        return _call.RequestStream.WriteAsync(command);
     }
 }

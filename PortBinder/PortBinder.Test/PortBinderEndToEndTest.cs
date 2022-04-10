@@ -1,48 +1,72 @@
+using PortBinder.Test.SpySocket;
 using System;
+using System.Text;
 using Xunit;
 
 namespace PortBinder.Test;
 
 public class PortBinderEndToEndTest : IDisposable
 {
-    const int SERVER_PORT = 34567;
-    readonly string SERVER_ADDRESS = $"localhost:{SERVER_PORT}";
+    string CLIENT_ID = Guid.NewGuid().ToString();
+    readonly int SERVER_PORT = RandomPortGenerator.GetNextPort();
+    readonly int LOCAL_SERVER_PORT = RandomPortGenerator.GetNextPort();
+    string SERVER_ADDRESS => $"localhost:{SERVER_PORT}";
     FakePortBinderServer server = new();
-    Application app = new();
+    Application app;
+    EchoServer localServer = new();
+
+    public PortBinderEndToEndTest()
+    {
+        localServer = new();
+        _ = localServer.RunAsync(LOCAL_SERVER_PORT);
+        app = new(LOCAL_SERVER_PORT);
+        server.Start(SERVER_PORT);
+        app.ConnectToServer(SERVER_ADDRESS);
+    }
 
     public void Dispose()
     {
+        localServer.Stop();
+        app.Close();
         server.Dispose();
     }
 
     [Fact]
     public void RegisterPortAndNoClientConnected()
     {
-        server.Start(SERVER_PORT);
-
-        app.ConnectToServer(SERVER_ADDRESS);
-
         app.RegisterPort(1234);
         server.AgentPortRegisterd(1234);
-
-        app.Close();
     }
 
     [Fact]
     public void ClientConnectedAndimmediatelyDisconnect()
     {
-        server.Start(SERVER_PORT);
+        app.RegisterPort(1234);
+        server.AgentPortRegisterd(1234);
 
-        app.ConnectToServer(SERVER_ADDRESS);
+        server.NotifiesClientConnected(CLIENT_ID);
+        app.ClientConnected();
+        server.NotifiesClientDisconnected(CLIENT_ID);
+        app.ClientDisconnected();
+    }
+
+    [Fact]
+    public void ClientSendHelloAndReceiveHelloFromLocalEchoServer()
+    {
+        var bytes = Encoding.UTF8.GetBytes("Hello\r\n");
 
         app.RegisterPort(1234);
         server.AgentPortRegisterd(1234);
 
-        server.NotifiesClientConnected();
+        server.NotifiesClientConnected(CLIENT_ID);
         app.ClientConnected();
-        server.NotifiesClientDisconnected();
-        app.ClientDisconnected();
 
-        app.Close();
+        server.NotifiesClientSendData(CLIENT_ID, bytes);
+        app.ClientSendData();
+
+        server.ReceiveData(bytes);
+
+        server.NotifiesClientDisconnected(CLIENT_ID);
+        app.ClientDisconnected();
     }
 }

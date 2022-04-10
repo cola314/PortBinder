@@ -20,10 +20,12 @@ enum ClientEventType {
 	NONE = 0;
 	CLIENT_CONNECTED = 1;
 	CLIENT_DISCONNECTED = 2;
+	DATA_TRANSFER = 3;
 }
 
 message ClientEvent {
 	ClientEventType event_type = 1;
 	string agent_id = 2;
 	string client_id = 3;
+	bytes data = 4;
 }
