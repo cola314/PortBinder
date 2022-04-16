@@ -39,7 +39,7 @@ public class PortBinderEndToEndTest : IDisposable
     }
 
     [Fact]
-    public void ClientConnectedAndimmediatelyDisconnect()
+    public void ClientConnectedAndImmediatelyDisconnect()
     {
         app.RegisterPort(1234);
         server.AgentPortRegisterd(1234);

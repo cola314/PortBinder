@@ -81,7 +81,15 @@ public class AgentSocketManager
 
         public void Connect()
         {
-            _tcpClient = new TcpClient("localhost", ServerPort);
+            try
+            {
+                _tcpClient = new TcpClient("localhost", ServerPort);
+            }
+            catch (Exception ex)
+            {
+                Disconnected?.Invoke(this, EventArgs.Empty);
+                return;
+            }
             Connected?.Invoke(this, EventArgs.Empty);
 
             _ = Task.Run(async () =>

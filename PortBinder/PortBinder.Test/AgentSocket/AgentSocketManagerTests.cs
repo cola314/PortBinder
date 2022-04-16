@@ -10,8 +10,10 @@ namespace PortBinder.Test.AgentSocket;
 
 public class AgentSocketManagerTests : IDisposable
 {
-    string CLIENT_ID = Guid.NewGuid().ToString();
-    int ECHO_SERVER_PORT = RandomPortGenerator.GetNextPort();
+    readonly string CLIENT_ID = Guid.NewGuid().ToString();
+
+    readonly int ECHO_SERVER_PORT = RandomPortGenerator.GetNextPort();
+    readonly int NOT_USED_PORT = RandomPortGenerator.GetNextPort();
     EchoServer server = new();
 
     public AgentSocketManagerTests()
@@ -25,7 +27,7 @@ public class AgentSocketManagerTests : IDisposable
     }
 
     [Fact]
-    public void ConnectToEchoServerAndSendHelloThenRecieveHello()
+    public void ConnectToEchoServerAndSendHelloThenReceiveHello()
     {
         var data = "Hello\r\n";
         var bytes = Encoding.UTF8.GetBytes(data);
@@ -41,6 +43,18 @@ public class AgentSocketManagerTests : IDisposable
         mock.Verify(x => x.OnConnected(CLIENT_ID), Times.Once);
         mock.Verify(x => x.OnReceiveData(CLIENT_ID,
             It.Is<byte[]>(o => data == Encoding.UTF8.GetString(o))), Times.Once);
+        mock.Verify(x => x.OnDisconnected(CLIENT_ID), Times.Once);
+    }
+
+    [Fact]
+    public void ConnectFailThenDisconnectedEventOccurs()
+    {
+        var mock = new Mock<IAgentSocketEventListener>();
+        var manager = new AgentSocketManager(mock.Object, NOT_USED_PORT);
+
+        manager.CreateNewClient(CLIENT_ID);
+        Thread.Sleep(1000);
+        
         mock.Verify(x => x.OnDisconnected(CLIENT_ID), Times.Once);
     }
 }
