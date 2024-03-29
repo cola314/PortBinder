@@ -15,9 +15,11 @@ class SocketRoom(private val sa: Socket, private val sb: Socket) {
 
         val buffer = ByteArray(1024)
         var bytesRead: Int
-        while (input.read(buffer).also { bytesRead = it } != -1) {
-            println("data in ${bytesRead}bytes")
-            otherOutput.write(buffer, 0, bytesRead)
-        }
+        runCatching {
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                println("data in ${bytesRead}bytes")
+                otherOutput.write(buffer, 0, bytesRead)
+            }
+        }.onFailure { other.close() }
     }
 }
