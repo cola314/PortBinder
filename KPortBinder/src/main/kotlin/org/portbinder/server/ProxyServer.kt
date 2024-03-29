@@ -3,40 +3,27 @@ package org.portbinder.server
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
 import java.io.PrintWriter
-import java.net.ServerSocket
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.concurrent.thread
 
 class ProxyServer(
-    private val port: Int,
+    port: Int,
     private val agentSocket: Socket
-) {
+): TcpServer(port) {
 
-    private val map = ConcurrentHashMap<String, Socket>()
+    override val name = "ProxyServer"
 
-    fun run() {
-        val server = ServerSocket(port)
-        println("Proxy Server is running on port ${server.localPort}")
+    private val map = ConcurrentHashMap<String, Client>()
 
-        while (true) {
-            val client = server.accept()
-            println("Client connected: ${client.inetAddress.hostAddress}")
-
-            thread { handleClient(client) }
-        }
-    }
-
-    private fun handleClient(socket: Socket) {
-        map[ClientId(socket).value] = socket
-        val output = PrintWriter(agentSocket.getOutputStream(), true)
-        output.println("proxy;${ClientId(socket).value}")
+    override fun handleClient(client: Client) {
+        map[ClientId(client).value] = client
+        Client(agentSocket).println("proxy;${ClientId(client).value}")
     }
 
     fun addProxyClient(clientId: ClientId, agentClientSocket: Socket) {
-        val socket = map[clientId.value]
-        if (socket != null) {
-            SocketRoom(socket, agentClientSocket).run()
+        val client = map[clientId.value]
+        if (client != null) {
+            SocketRoom(client.socket, agentClientSocket).run()
         }
     }
 }
