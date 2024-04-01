@@ -1,5 +1,6 @@
 package org.portbinder.agent
 
+import org.portbinder.command.Command
 import org.portbinder.server.Client
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
@@ -22,12 +23,10 @@ class PortBinderAgent(
                 it.println("agent;${serverOpenPort}")
 
                 while (true) {
-                    val line = it.readLine()
-                    val tokens = line.split(';')
-                    val command = tokens[0]
-                    println("agent command in: ${line}")
-                    when (command) {
-                        "proxy" -> createProxy(ClientId(tokens[1]))
+                    val command = Command.parse(it.readLine())
+
+                    when (command.type) {
+                        "proxy" -> createProxy(ClientId(command.arg))
                     }
                 }
             }

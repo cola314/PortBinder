@@ -1,5 +1,6 @@
 package org.portbinder.server
 
+import org.portbinder.command.Command
 import org.portbinder.tcp.ClientId
 import kotlin.concurrent.thread
 
@@ -13,14 +14,11 @@ class PortBinderServer(
     private var agentClient: Client? = null
 
     override fun handleClient(client: Client) {
-        val line = client.readLine()
-        val tokens = line.split(';')
-        val command = tokens[0]
-        println("command in ${command}")
+        val command = Command.parse(client.readLine())
 
-        when (command) {
-            "agent" -> handleOpen(tokens[1], client)
-            "proxy" -> handleProxy(ClientId(tokens[1]), client)
+        when (command.type) {
+            "agent" -> handleOpen(command.arg, client)
+            "proxy" -> handleProxy(ClientId(command.arg), client)
         }
     }
 
