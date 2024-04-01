@@ -1,5 +1,6 @@
 package org.portbinder.agent
 
+import org.portbinder.server.Client
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
 import java.io.BufferedReader
@@ -41,11 +42,10 @@ class PortBinderAgent(
 
     fun createProxy(clientId: ClientId) {
         val localSocket = Socket("127.0.0.1", localPort)
-        val serverSocket = Socket(serverUrl, serverPort)
+        val serverClient = Client(Socket(serverUrl, serverPort))
 
-        val serverOutput = PrintWriter(serverSocket.getOutputStream(), true)
-        serverOutput.println("proxy;${clientId.value}")
+        serverClient.println("proxy;${clientId.value}")
 
-        SocketRoom(localSocket, serverSocket).run()
+        SocketRoom(localSocket, serverClient.socket).run()
     }
 }

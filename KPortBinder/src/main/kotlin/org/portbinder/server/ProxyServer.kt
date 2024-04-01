@@ -2,7 +2,6 @@ package org.portbinder.server
 
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
-import java.io.PrintWriter
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
 
