@@ -3,9 +3,6 @@ package org.portbinder.agent
 import org.portbinder.server.Client
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
 import java.net.Socket
 import kotlin.concurrent.thread
 
@@ -15,19 +12,17 @@ class PortBinderAgent(
     private val localPort: Int,
     private val serverOpenPort: Int
 ) {
-    private var socket: Socket? = null
+    private var client: Client? = null
 
     fun run() {
-        socket = Socket(serverUrl, serverPort)
+        client = Client(Socket(serverUrl, serverPort))
 
         thread {
-            socket?.let {
-                val output = PrintWriter(it.getOutputStream(), true)
-                output.println("agent;${serverOpenPort}")
+            client?.let {
+                it.println("agent;${serverOpenPort}")
 
-                val input = BufferedReader(InputStreamReader(it.getInputStream()))
                 while (true) {
-                    val line = input.readLine()
+                    val line = it.readLine()
                     val tokens = line.split(';')
                     val command = tokens[0]
                     println("agent command in: ${line}")
