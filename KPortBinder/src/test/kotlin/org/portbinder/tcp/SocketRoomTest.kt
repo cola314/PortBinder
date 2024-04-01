@@ -16,7 +16,7 @@ class SocketRoomTest {
         val (server1, client1) = generateServerAndClient()
         val (server2, client2) = generateServerAndClient()
 
-        thread { SocketRoom(client1.socket, client2.socket).run() }.withDelay()
+        thread { SocketRoom(client1, client2).run() }.withDelay()
 
         val message = "hello world"
         server1.println(message).withDelay()
@@ -31,7 +31,7 @@ class SocketRoomTest {
         val (_, client1) = generateServerAndClient()
         val (_, client2) = generateServerAndClient()
 
-        thread { SocketRoom(client1.socket, client2.socket).run() }.withDelay()
+        thread { SocketRoom(client1, client2).run() }.withDelay()
 
         client1.socket.close().withDelay()
 

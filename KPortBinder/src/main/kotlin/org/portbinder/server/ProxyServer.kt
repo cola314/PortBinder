@@ -21,7 +21,7 @@ class ProxyServer(
     fun addProxyClient(clientId: ClientId, agentClient: Client) {
         val client = map[clientId.value]
         if (client != null) {
-            SocketRoom(client.socket, agentClient.socket).run()
+            SocketRoom(client, agentClient).run()
         }
     }
 }
