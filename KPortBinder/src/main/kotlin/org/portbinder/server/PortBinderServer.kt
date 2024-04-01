@@ -23,6 +23,9 @@ class PortBinderServer(
     }
 
     private fun handleOpen(arg: String, client: Client) {
+        agentClient?.socket?.close()
+        proxyServer?.close()
+
         agentClient = client
         val port = arg.toIntOrNull() ?: throw IllegalArgumentException()
         thread {

@@ -8,8 +8,11 @@ abstract class TcpServer(
 ) {
     abstract val name: String
 
+    private var serverSocket: ServerSocket? = null
+
     fun run() {
         val server = ServerSocket(port)
+        serverSocket = server
         println("${name} Server is running on port ${server.localPort}")
 
         while (true) {
@@ -23,4 +26,8 @@ abstract class TcpServer(
     }
 
     protected abstract fun handleClient(client: Client)
+
+    fun close() {
+        serverSocket?.close()
+    }
 }
