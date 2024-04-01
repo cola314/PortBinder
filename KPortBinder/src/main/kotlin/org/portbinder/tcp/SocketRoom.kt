@@ -1,5 +1,6 @@
 package org.portbinder.tcp
 
+import org.portbinder.server.Client
 import java.net.Socket
 import kotlin.concurrent.thread
 

@@ -40,7 +40,7 @@ class PortBinderAgent(
 
     }
 
-    fun createProxy(clientId: ClientId) {
+    private fun createProxy(clientId: ClientId) {
         val localSocket = Socket("127.0.0.1", localPort)
         val serverClient = Client(Socket(serverUrl, serverPort))
 

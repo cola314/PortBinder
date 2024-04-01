@@ -2,12 +2,11 @@ package org.portbinder.server
 
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
-import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
 
 class ProxyServer(
     port: Int,
-    private val agentSocket: Socket
+    private val agentClient: Client
 ): TcpServer(port) {
 
     override val name = "ProxyServer"
@@ -16,13 +15,13 @@ class ProxyServer(
 
     override fun handleClient(client: Client) {
         map[ClientId(client).value] = client
-        Client(agentSocket).println("proxy;${ClientId(client).value}")
+        agentClient.println("proxy;${ClientId(client).value}")
     }
 
-    fun addProxyClient(clientId: ClientId, agentClientSocket: Socket) {
+    fun addProxyClient(clientId: ClientId, agentClient: Client) {
         val client = map[clientId.value]
         if (client != null) {
-            SocketRoom(client.socket, agentClientSocket).run()
+            SocketRoom(client.socket, agentClient.socket).run()
         }
     }
 }

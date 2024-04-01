@@ -7,6 +7,7 @@ import org.portbinder.common.TestPort
 import org.portbinder.common.withDelay
 import org.portbinder.server.Client
 import org.portbinder.server.EchoServer
+import org.portbinder.server.PortBinderServer
 import java.net.Socket
 import kotlin.concurrent.thread
 

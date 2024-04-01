@@ -1,10 +1,8 @@
-package org.portbinder
+package org.portbinder.server
 
 import org.junit.jupiter.api.Test
 import org.portbinder.common.TestPort
 import org.portbinder.common.withDelay
-import org.portbinder.server.Client
-import org.portbinder.server.ProxyServer
 import org.portbinder.server.mock.MockServer
 import org.portbinder.tcp.ClientId
 import java.net.Socket
@@ -21,7 +19,7 @@ class ProxyServerTest {
         val agentProxyPort = TestPort.get()
         val (agent, server) = MockServer.generateMockServerAndClient(serverPort)
         val (agentProxy, agentClient) = MockServer.generateMockServerAndClient(agentProxyPort)
-        val proxyServer = ProxyServer(proxyServerPort, server.socket)
+        val proxyServer = ProxyServer(proxyServerPort, server)
 
         thread { proxyServer.run() }.withDelay()
 
@@ -32,7 +30,7 @@ class ProxyServerTest {
         assertTrue(result.startsWith("proxy;127.0.0.1"))
 
         val clientId = ClientId(result.split(';')[1])
-        proxyServer.addProxyClient(clientId, agentClient.socket)
+        proxyServer.addProxyClient(clientId, agentClient)
 
         val message = "hello world"
         proxyClient.println(message)
