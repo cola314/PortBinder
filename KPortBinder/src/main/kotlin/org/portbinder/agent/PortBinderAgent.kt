@@ -5,7 +5,6 @@ import org.portbinder.server.Client
 import org.portbinder.tcp.ClientId
 import org.portbinder.tcp.SocketRoom
 import java.net.Socket
-import kotlin.concurrent.thread
 
 class PortBinderAgent(
     private val serverUrl: String = "127.0.0.1",
@@ -17,21 +16,17 @@ class PortBinderAgent(
 
     fun run() {
         client = Client(Socket(serverUrl, serverPort))
+        client?.let {
+            it.println("agent;${serverOpenPort}")
 
-        thread {
-            client?.let {
-                it.println("agent;${serverOpenPort}")
+            while (true) {
+                val command = Command.parse(it.readLine())
 
-                while (true) {
-                    val command = Command.parse(it.readLine())
-
-                    when (command.type) {
-                        "proxy" -> createProxy(ClientId(command.arg))
-                    }
+                when (command.type) {
+                    "proxy" -> createProxy(ClientId(command.arg))
                 }
             }
         }
-
     }
 
     private fun createProxy(clientId: ClientId) {
